@@ -1,0 +1,147 @@
+:doctitle: tvchannels-scan-mirakc
+:author: 68fpjc
+// :sectnums:
+// :toc:
+
+= {doctitle}
+
+== 概要
+
+PLEX PX-Q3U4 + https://github.com/nns779/px4_drv[px4_drv] + https://github.com/mirakc/mirakc[mirakc] + https://github.com/stz2012/recpt1[recpt1] 向けのチャンネルスキャンツールです。自分の環境で https://hub.docker.com/r/collelog/tvchannels-scan[collelog/tvchannels-scan] がうまく動かなかった & 原因を調べるのが面倒だったので作りました。
+
+https://stedolan.github.io/jq/[jq] が必要です。また、 https://hub.docker.com/r/mirakc/mirakc[mirakcのDocker公式イメージ] を利用しているため、Dockerも必要です。
+
+== 使い方
+
+=== 準備
+
+[source,sh]
+----
+$ git clone https://github.com/68fpjc/tvchannels-scan-mirakc.git
+$ cd tvchannels-scan-mirakc
+----
+
+=== サービス定義JSONを出力し、ファイルに落とす
+
+※ 時間がかかるので、起動したら散歩でもしてきてください。
+
+[source,sh]
+----
+$ ./scan.sh >services.json
+----
+
+=== YAMLを出力し、ファイルに落とす
+
+[source,sh]
+----
+$ cat services.json | ./to-yml.sh >channels-mirakc.yml
+----
+
+== 詳細
+
+=== scan.sh
+
+下記のような処理を繰り返し実行し、サービス定義JSONを出力します。
+
+. Dockerコンテナを起動する
+. コンテナ内でrecpt1とmirakc-aribを実行し、JSONを出力する
+. コンテナを終了する
+
+==== サービス定義JSONのサンプル
+
+[source,yaml]
+----
+[
+  {
+    "type": "GR",
+    "channel": "16",
+    "services": [
+      {
+        "nid": 32391,
+        "tsid": 32391,
+        "sid": 23608,
+        "name": "ＴＯＫＹＯ　ＭＸ１",
+        "type": 1,
+        "logoId": 16,
+        "remoteControlKeyId": 9
+      },
+      {
+        "nid": 32391,
+        "tsid": 32391,
+        "sid": 23609,
+        "name": "ＴＯＫＹＯ　ＭＸ１",
+        "type": 1,
+        "logoId": 16,
+        "remoteControlKeyId": 9
+      },
+----
+
+=== to-yml.sh
+
+サービス定義JSONをこねくり回し、mirakcチャンネル設定の形式でYAMLを出力します。
+
+==== YAMLのサンプル
+
+[source,yaml]
+----
+channels:
+  - name: 'ＴＯＫＹＯ　ＭＸ１ / ＴＯＫＹＯ　ＭＸ１ / ＴＯＫＹＯ　ＭＸ２'
+    type: 'GR'
+    channel: '16'
+    # services: [23608,23609,23610]
+
+  - name: 'フジテレビ'
+    type: 'GR'
+    channel: '21'
+    # services: [1056,1057,1058]
+
+  - name: 'ＴＢＳ１ / ＴＢＳ２'
+    type: 'GR'
+    channel: '22'
+    # services: [1048,1049]
+----
+
+出力されたYAMLをmirakcのconfig.ymlに張り付けて使用してください。なお、BSの設定をそのまま使うとmirakcのチャンネルスキャンが終わらないので、下記のように放送大学ラジオを除外してください。
+
+[source,yaml]
+----
+  - name: '放送大学ｅｘ / 放送大学ｏｎ / 放送大学ラジオ'
+    type: 'BS'
+    channel: 'BS11_1'
+    # services: [231,232,531]
+    excluded-services: [531]
+----
+
+== おまけ
+
+extraディレクトリ配下は、mirakc用ロゴデータ生成ツールです。
+
+=== logosディレクトリを作り、配下にロゴデータJSONを出力する
+
+※ 時間がかかるので、起動したらスーパーで買い物でもしてきてください。
+
+※ ロゴが降ってくるとは限らないため、漏れが出る可能性があります。
+
+[source,sh]
+----
+$ cat services.json | extra/logos.sh
+----
+
+=== ロゴファイル（logos/*.png）とロゴ設定YAML（logos/logos-mirakc.yml）を出力する
+
+[source,sh]
+----
+$ cat services.json | extra/to-logos-yml.sh
+----
+
+== 補足
+
+* /dev/px4video0と/dev/px4video2が使えればいいので、ほかのチューナ（PX-W3U4等）でも使えるかもしれません。使えないかもしれません。
+* CATVには対応していません。
+* 全体的にヘボいので、誰か直してください。
+
+== 参考にしたもの
+
+* https://mirakc.github.io/dekiru-mirakc/[できるmirakc]
+
+以上
