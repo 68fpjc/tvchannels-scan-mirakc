@@ -8,7 +8,7 @@
     echo {
     echo "\"type\":\"GR\",\"channel\":\"${CH}\",\"services\":"
     docker run --rm --device /dev/px4video2 -i --entrypoint /usr/bin/env mirakc/mirakc:alpine /bin/ash <<EOF
-recpt1 --device /dev/px4video2 ${CH} 30 - | mirakc-arib scan-services || echo []
+recpt1 --device /dev/px4video2 ${CH} 60 - | mirakc-arib scan-services || echo []
 EOF
     echo }
   done
@@ -21,7 +21,7 @@ EOF
       echo {
       echo "\"type\":\"BS\",\"channel\":\"${CH}\",\"services\":"
     docker run --rm --device /dev/px4video0 -i --entrypoint /usr/bin/env mirakc/mirakc:alpine /bin/ash <<EOF
-recpt1 --device /dev/px4video0 --lnb 15 ${CH} 30 - | mirakc-arib scan-services || echo []
+recpt1 --device /dev/px4video0 --lnb 15 ${CH} 60 - | mirakc-arib scan-services || echo []
 EOF
       echo }
     done
@@ -34,7 +34,7 @@ EOF
     echo {
     echo "\"type\":\"CS\",\"channel\":\"${CH}\",\"services\":"
     docker run --rm --device /dev/px4video0 -i --entrypoint /usr/bin/env mirakc/mirakc:alpine /bin/ash <<EOF
-recpt1 --device /dev/px4video0 --lnb 15 ${CH} 30 - | mirakc-arib scan-services || echo []
+recpt1 --device /dev/px4video0 --lnb 15 ${CH} 60 - | mirakc-arib scan-services || echo []
 EOF
     echo }
   done
