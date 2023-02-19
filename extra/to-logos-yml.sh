@@ -30,7 +30,9 @@
     if [ -n "${RESULT}" ] ; then
       echo " ... OK" >&2
       echo "      # ${NAME}"
-      echo "    - service-triple: [${NID}, ${TSID}, ${SID}]"
+      # modified for mirakc v2
+      # echo "    - service-triple: [${NID}, ${TSID}, ${SID}]"
+      echo "    - service-id: $(expr ${NID} '*' 100000 '+' ${SID})"
       echo "      image: /var/lib/mirakc/logos/${NID}-${TSID}-${SID}.png"
       echo
       echo "${RESULT}" | jq -r '.data' | cut -d ',' -f 2 | base64 -d >logos/${NID}-${TSID}-${SID}.png
